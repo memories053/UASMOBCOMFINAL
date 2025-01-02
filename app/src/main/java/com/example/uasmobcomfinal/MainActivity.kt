@@ -10,8 +10,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,8 +33,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.provider.OpenableColumns
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.filled.Add
+//import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.media3.common.Player
@@ -48,6 +53,15 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import java.util.concurrent.TimeUnit
 import retrofit2.Retrofit
+
+object RetroColors {
+    val background = Color(0xFFF5E6CA)
+    val primary = Color(0xFFE86A33)
+    val secondary = Color(0xFF41644A)
+    val accent = Color(0xFF443C68)
+    val surface = Color(0xFFFFE5CA)
+    val text = Color(0xFF2C3639)
+}
 
 data class SpotifyTrack(
     val id: String,
@@ -567,55 +581,125 @@ fun SpotifyTrackItem(
 }
 
 @Composable
+fun RetroHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(RetroColors.primary)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "My Retro Music Player",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color.White,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun RetroPlaylistCard(
+    playlist: Playlist,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = RetroColors.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Icon(
+                Icons.Default.PlayArrow,
+                contentDescription = null,
+                tint = RetroColors.primary,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = playlist.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = RetroColors.text
+            )
+            Text(
+                text = "${playlist.songs.size} songs",
+                style = MaterialTheme.typography.bodyMedium,
+                color = RetroColors.text.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+
+@Composable
 fun MusicPlayerApp(viewModel: MusicPlayerViewModel) {
     var selectedTab by remember { mutableStateOf(0) }
 
-    Scaffold(
-        bottomBar = {
-            Column {
-                // Now Playing Bar above Navigation Bar
-                CurrentlyPlayingBar(viewModel)
+    MaterialTheme(
+        colorScheme = MaterialTheme.colorScheme.copy(
+            background = RetroColors.background,
+            primary = RetroColors.primary,
+            secondary = RetroColors.secondary,
+            surface = RetroColors.surface
+        )
+    ) {
+        Scaffold(
+            bottomBar = {
+                Column {
+                    // Now Playing Bar above Navigation Bar
+                    CurrentlyPlayingBar(viewModel)
 
-                // Navigation Bar
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Star, "Songs") },
-                        label = { Text("Songs") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.Favorite, "Favorites") },
-                        label = { Text("Favorites") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.Default.PlayArrow, "Playlists") },
-                        label = { Text("Playlists") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.Search, "Search Spotify") },
-                        label = { Text("Search") }
-                    )
+                    // Navigation Bar
+                    NavigationBar {
+                        NavigationBarItem(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            icon = { Icon(Icons.Default.Star, "Songs") },
+                            label = { Text("Songs") }
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            icon = { Icon(Icons.Default.Favorite, "Favorites") },
+                            label = { Text("Favorites") }
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            icon = { Icon(Icons.Default.PlayArrow, "Playlists") },
+                            label = { Text("Playlists") }
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 3,
+                            onClick = { selectedTab = 3 },
+                            icon = { Icon(Icons.Default.Search, "Search Spotify") },
+                            label = { Text("Search") }
+                        )
+                    }
                 }
             }
-        }
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            when (selectedTab) {
-                0 -> SongsList(viewModel)
-                1 -> FavoritesList(viewModel)
-                2 -> PlaylistsScreen(viewModel)
-                3 -> SpotifySearchScreen(viewModel)
+        ) { padding ->
+            Column(modifier = Modifier.padding(padding)) {
+                when (selectedTab) {
+                    0 -> SongsList(viewModel)
+                    1 -> FavoritesList(viewModel)
+                    2 -> PlaylistsScreen(viewModel)
+                    3 -> SpotifySearchScreen(viewModel)
+                }
             }
         }
     }
 }
+
+
 
 @Composable
 fun SongsList(viewModel: MusicPlayerViewModel) {
@@ -871,8 +955,8 @@ fun CurrentlyPlayingBar(viewModel: MusicPlayerViewModel) {
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            if (isPlaying) Icons.Default.Share else Icons.Default.PlayArrow,
-                            "Play/Pause",
+                            painter = painterResource(id = if (isPlaying) R.drawable.pause else R.drawable.play_arrow),
+                            contentDescription = "Play/Pause",
                             modifier = Modifier.size(32.dp)
                         )
                     }
